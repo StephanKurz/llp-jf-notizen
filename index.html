@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JF-Notizen</title>
+<style>
+  :root {
+    --ios-blue: #007aff;
+    --bezel: #1c1c1e;
+    --page-bg: #eceef1;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--page-bg);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  .phone {
+    width: min(390px, 100%);
+    height: min(844px, 92vh);
+    background: var(--bezel);
+    border-radius: 54px;
+    padding: 14px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    display: flex;
+    flex-direction: column;
+  }
+  .screen {
+    position: relative;
+    flex: 1;
+    background: #ffffff;
+    border-radius: 40px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .notch {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 26px;
+    background: var(--bezel);
+    border-radius: 20px;
+    z-index: 5;
+  }
+
+  .statusbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 24px 2px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #000;
+    flex-shrink: 0;
+  }
+  .statusbar .icons { display: flex; align-items: center; gap: 5px; }
+  .statusbar svg { display: block; }
+
+  .navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 10px 8px;
+    flex-shrink: 0;
+    border-bottom: 1px solid #ececec;
+  }
+  .navbtn {
+    background: none;
+    border: none;
+    color: var(--ios-blue);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 8px;
+    cursor: pointer;
+    border-radius: 8px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .navbtn:disabled { color: #c7c7cc; cursor: default; }
+  .navbtn:not(:disabled):active { background: #f0f0f5; }
+  .navcenter { text-align: center; flex: 1; min-width: 0; }
+  .navcenter .pos { font-size: 11px; color: #8e8e93; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }
+
+  .titleblock { padding: 6px 20px 10px; flex-shrink: 0; }
+  .titleblock h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #1c1c1e;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .titleblock .meta {
+    margin-top: 2px;
+    font-size: 13px;
+    color: #8e8e93;
+  }
+
+  .content-wrap {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 20px 90px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .content {
+    font-size: 16px;
+    line-height: 1.45;
+    color: #1c1c1e;
+    outline: none;
+    min-height: 100%;
+  }
+  .content p { margin: 0 0 10px; }
+  .content ul, .content ol { margin: 0 0 10px; padding-left: 22px; }
+  .content li { margin-bottom: 4px; }
+  .content:empty::before {
+    content: attr(data-placeholder);
+    color: #c7c7cc;
+  }
+  .content .new-entry, .content span[style*="color"] {
+    color: var(--ios-blue);
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 40px;
+    text-align: center;
+    color: #8e8e93;
+    font-size: 15px;
+  }
+
+  .save-fab {
+    position: absolute;
+    right: 18px;
+    bottom: 22px;
+    background: var(--ios-blue);
+    color: #fff;
+    border: none;
+    border-radius: 24px;
+    padding: 13px 22px;
+    font-size: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    box-shadow: 0 4px 14px rgba(0,122,255,0.4);
+    cursor: pointer;
+    transition: transform 0.12s, opacity 0.12s, background 0.2s;
+  }
+  .save-fab:active { transform: scale(0.96); }
+  .save-fab:disabled { background: #9fc9ff; cursor: default; box-shadow: none; }
+  .save-fab.saved { background: #34c759; }
+  .save-fab .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #fff;
+    display: none;
+  }
+  .save-fab.dirty .dot { display: block; }
+
+  .toast {
+    position: absolute;
+    left: 50%;
+    bottom: 90px;
+    transform: translateX(-50%) translateY(10px);
+    background: rgba(28,28,30,0.92);
+    color: #fff;
+    font-size: 13px;
+    padding: 9px 16px;
+    border-radius: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.error { background: rgba(255,59,48,0.95); }
+
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.5);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+  .save-fab.loading .spinner { display: inline-block; }
+  .save-fab.loading .label { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="screen">
+    <div class="notch"></div>
+    <div class="statusbar">
+      <span id="clock">9:41</span>
+      <span class="icons">
+        <svg width="17" height="11" viewBox="0 0 17 11" fill="none"><path d="M1 8.5C1 7.9 1.4 7.5 2 7.5C2.6 7.5 3 7.9 3 8.5V10C3 10.6 2.6 11 2 11C1.4 11 1 10.6 1 10V8.5Z" fill="#000"/><path d="M5 6.5C5 5.9 5.4 5.5 6 5.5C6.6 5.5 7 5.9 7 6.5V10C7 10.6 6.6 11 6 11C5.4 11 5 10.6 5 10V6.5Z" fill="#000"/><path d="M9 4.2C9 3.6 9.4 3.2 10 3.2C10.6 3.2 11 3.6 11 4.2V10C11 10.6 10.6 11 10 11C9.4 11 9 10.6 9 10V4.2Z" fill="#000"/><path d="M13 1.5C13 0.9 13.4 0.5 14 0.5C14.6 0.5 15 0.9 15 1.5V10C15 10.6 14.6 11 14 11C13.4 11 13 10.6 13 10V1.5Z" fill="#000"/></svg>
+        <svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="#000" stroke-opacity="0.4"/><rect x="2.5" y="2.5" width="16" height="7" rx="1.2" fill="#000"/><rect x="22" y="4" width="1.5" height="4" rx="0.75" fill="#000" fill-opacity="0.4"/></svg>
+      </span>
+    </div>
+
+    <div class="navbar">
+      <button class="navbtn" id="prevBtn" title="Frühere JF-Termine">‹ Früher</button>
+      <div class="navcenter"><div class="pos" id="posLabel">–</div></div>
+      <button class="navbtn" id="nextBtn" title="Spätere JF-Termine">Später ›</button>
+    </div>
+
+    <div class="titleblock">
+      <h1 id="eventTitle">Lädt …</h1>
+      <div class="meta" id="eventMeta">&nbsp;</div>
+    </div>
+
+    <div class="content-wrap">
+      <div class="content" id="content" contenteditable="false" data-placeholder="Keine Beschreibung vorhanden. Tippen, um einen Eintrag hinzuzufügen …"></div>
+      <div class="empty-state" id="emptyState" style="display:none;"></div>
+    </div>
+
+    <button class="save-fab" id="saveBtn" disabled>
+      <span class="spinner"></span>
+      <span class="dot"></span>
+      <span class="label" id="saveLabel">Speichern</span>
+    </button>
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const FN_BASE = "https://cclcdhwnzkzciwjaclzt.supabase.co/functions/v1";
+  const LIST_URL = FN_BASE + "/jf-list";
+  const UPDATE_URL = FN_BASE + "/jf-update";
+  const BLUE = "#007aff";
+
+  const contentEl = document.getElementById("content");
+  const emptyStateEl = document.getElementById("emptyState");
+  const titleEl = document.getElementById("eventTitle");
+  const metaEl = document.getElementById("eventMeta");
+  const posLabel = document.getElementById("posLabel");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const saveBtn = document.getElementById("saveBtn");
+  const saveLabel = document.getElementById("saveLabel");
+  const toastEl = document.getElementById("toast");
+  const clockEl = document.getElementById("clock");
+
+  let events = [];
+  let currentIndex = -1;
+  let originalHtml = "";
+  let dirty = false;
+
+  function updateClock() {
+    const now = new Date();
+    clockEl.textContent = now.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  }
+  updateClock();
+  setInterval(updateClock, 15000);
+
+  function showToast(msg, isError) {
+    toastEl.textContent = msg;
+    toastEl.classList.toggle("error", !!isError);
+    toastEl.classList.add("show");
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toastEl.classList.remove("show"), 2200);
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return "Kein Datum";
+    const d = new Date(iso);
+    return d.toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long", year: "numeric" }) +
+      " · " + d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) + " Uhr";
+  }
+
+  function setDirty(v) {
+    dirty = v;
+    saveBtn.disabled = !v;
+    saveBtn.classList.toggle("dirty", v);
+    saveBtn.classList.remove("saved");
+    saveLabel.textContent = "Speichern";
+  }
+
+  function loadIndex(i) {
+    if (i < 0 || i >= events.length) return;
+    currentIndex = i;
+    const ev = events[i];
+    titleEl.textContent = ev.name || "JF-Termin";
+    metaEl.textContent = fmtDate(ev.start);
+    posLabel.textContent = (i + 1) + " von " + events.length;
+    originalHtml = ev.description || "";
+    contentEl.innerHTML = originalHtml;
+    contentEl.contentEditable = "true";
+    prevBtn.disabled = i <= 0;
+    nextBtn.disabled = i >= events.length - 1;
+    setDirty(false);
+  }
+
+  function confirmNavAway() {
+    if (!dirty) return true;
+    return confirm("Ungespeicherte Änderungen verwerfen und zu einem anderen JF-Termin wechseln?");
+  }
+
+  prevBtn.addEventListener("click", () => {
+    if (currentIndex <= 0) return;
+    if (!confirmNavAway()) return;
+    loadIndex(currentIndex - 1);
+  });
+  nextBtn.addEventListener("click", () => {
+    if (currentIndex >= events.length - 1) return;
+    if (!confirmNavAway()) return;
+    loadIndex(currentIndex + 1);
+  });
+
+  // Jede Neueingabe soll blau erscheinen, damit sie sich vom vorhandenen
+  // schwarzen Text abhebt. execCommand("foreColor") auf eine eingeklappte
+  // Selektion ist über Browser/Eingabemethoden hinweg unzuverlässig, daher
+  // wird neu getippter Text direkt selbst in ein blaues <span> eingefügt statt
+  // sich auf den Formatierungs-Zustand des Editors zu verlassen. Der Cursor
+  // bleibt dabei im Text-Node des Spans, damit aufeinanderfolgende Zeichen im
+  // selben Span landen (kein Span pro Buchstabe).
+  function insertBlueText(text) {
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    range.deleteContents();
+
+    const atEndOfBlueRun =
+      range.startContainer.nodeType === Node.TEXT_NODE &&
+      range.startContainer.parentElement &&
+      range.startContainer.parentElement.dataset.blueEntry === "1" &&
+      range.startOffset === range.startContainer.textContent.length;
+
+    if (atEndOfBlueRun) {
+      const textNode = range.startContainer;
+      textNode.textContent += text;
+      range.setStart(textNode, textNode.textContent.length);
+      range.setEnd(textNode, textNode.textContent.length);
+    } else {
+      const span = document.createElement("span");
+      span.dataset.blueEntry = "1";
+      span.style.color = BLUE;
+      span.appendChild(document.createTextNode(text));
+      range.insertNode(span);
+      const textNode = span.firstChild;
+      range.setStart(textNode, textNode.textContent.length);
+      range.setEnd(textNode, textNode.textContent.length);
+    }
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  contentEl.addEventListener("beforeinput", (e) => {
+    if (e.inputType === "insertText" && e.data) {
+      e.preventDefault();
+      insertBlueText(e.data);
+      setDirty(contentEl.innerHTML !== originalHtml);
+    }
+  });
+
+  contentEl.addEventListener("paste", (e) => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData("text/plain");
+    const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>");
+    document.execCommand("insertHTML", false, '<span style="color:' + BLUE + ';">' + escaped + "</span>");
+  });
+
+  contentEl.addEventListener("input", () => {
+    setDirty(contentEl.innerHTML !== originalHtml);
+  });
+
+  saveBtn.addEventListener("click", async () => {
+    if (!dirty || currentIndex < 0) return;
+    const ev = events[currentIndex];
+    const newHtml = contentEl.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.classList.add("loading");
+    try {
+      const resp = await fetch(UPDATE_URL, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: ev.id, description: newHtml }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || ("Fehler " + resp.status));
+      ev.description = data.description;
+      originalHtml = contentEl.innerHTML;
+      dirty = false;
+      saveBtn.classList.remove("dirty", "loading");
+      saveBtn.classList.add("saved");
+      saveLabel.textContent = "Gespeichert ✓";
+      showToast("Beschreibung gespeichert.");
+      setTimeout(() => {
+        if (!dirty) { saveLabel.textContent = "Speichern"; saveBtn.classList.remove("saved"); saveBtn.disabled = true; }
+      }, 1800);
+    } catch (err) {
+      saveBtn.classList.remove("loading");
+      saveBtn.disabled = false;
+      showToast("Speichern fehlgeschlagen: " + err.message, true);
+    }
+  });
+
+  window.addEventListener("beforeunload", (e) => {
+    if (dirty) { e.preventDefault(); e.returnValue = ""; }
+  });
+
+  async function init() {
+    try {
+      const resp = await fetch(LIST_URL);
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || ("Fehler " + resp.status));
+      events = data.events || [];
+      if (events.length === 0) {
+        titleEl.textContent = "Keine JF-Termine";
+        metaEl.textContent = "";
+        contentEl.style.display = "none";
+        emptyStateEl.style.display = "flex";
+        emptyStateEl.textContent = "Es wurden keine Termine mit dem Namen \"JF...\" gefunden.";
+        return;
+      }
+      const now = new Date().toISOString();
+      let startIdx = events.length - 1;
+      for (let i = events.length - 1; i >= 0; i--) {
+        if (events[i].start && events[i].start <= now) { startIdx = i; break; }
+      }
+      loadIndex(startIdx);
+    } catch (err) {
+      titleEl.textContent = "Fehler beim Laden";
+      metaEl.textContent = "";
+      contentEl.style.display = "none";
+      emptyStateEl.style.display = "flex";
+      emptyStateEl.textContent = "JF-Termine konnten nicht geladen werden: " + err.message;
+    }
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
