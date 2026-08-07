@@ -10,6 +10,7 @@ const MAX_DESCRIPTION_LENGTH = 200000;
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "PATCH, OPTIONS",
 };
 
 function jsonResponse(data: unknown, status: number): Response {

@@ -11,6 +11,7 @@ const EV_BASE_URL = "https://easyverein.com/api/v2.0";
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
 };
 
 function jsonResponse(data: unknown, status: number): Response {
