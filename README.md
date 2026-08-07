@@ -1,8 +1,9 @@
 # JF-Notizen (Easyverein)
 
-Ein per `<iframe>` einbettbares Widget im Look einer iPhone-Notizen-App, um die
-Beschreibung der Easyverein-Termine mit Namenspräfix "JF" (Jour Fixe) chronologisch
-durchzublättern und direkt zu bearbeiten.
+Ein per `<iframe>` einbettbares Widget (gleiche schlichte Karten-Optik wie
+llp-termine-suche/llp-schulkontakte-editor), um die Beschreibung der
+Easyverein-Termine mit Namenspräfix "JF" (Jour Fixe) chronologisch durchzublättern und
+direkt zu bearbeiten.
 
 **Live:** https://stephankurz.github.io/llp-jf-notizen/
 
@@ -11,9 +12,15 @@ durchzublättern und direkt zu bearbeiten.
 ```html
 <iframe
   src="https://stephankurz.github.io/llp-jf-notizen/"
-  style="width:100%; height:900px; border:0;">
+  style="display:block; margin:0 auto; width:100%; max-width:1140px; height:900px; border:0;">
 </iframe>
 ```
+
+`display:block; margin:0 auto;` + `max-width` sorgen dafür, dass das `<iframe>`-Element
+selbst auf der Host-Seite zentriert bleibt (ein iframe ist sonst standardmäßig
+linksbündig, unabhängig davon, wie der Inhalt darin ausgerichtet ist). Die Innenbreite
+des Widgets selbst ist auf 1080px begrenzt (`#app { max-width: 1080px }` in
+`index.html`).
 
 Es gibt keinen eigenen Login: Die einbettende Webseite ist die Sicherheitsgrenze
 (gleiches Prinzip wie beim Schulkontakte-Editor und der Termine-Suche).
